@@ -1,0 +1,48 @@
+---
+- name: Update apt cache and upgrade packages
+  apt:
+    update_cache: yes
+    upgrade: dist
+    cache_valid_time: 3600
+
+- name: Install essential security and utility packages
+  apt:
+    name:
+      - ufw
+      - fail2ban
+      - curl
+      - git
+      - htop
+      - ca-certificates
+      - gnupg
+    state: present
+
+- name: Configure UFW firewall defaults
+  ufw:
+    direction: "{{ item.direction }}"
+    policy: "{{ item.policy }}"
+  loop:
+    - { direction: 'incoming', policy: 'deny' }
+    - { direction: 'outgoing', policy: 'allow' }
+
+- name: Allow essential ports in UFW
+  ufw:
+    rule: allow
+    port: "{{ item }}"
+    proto: tcp
+  loop:
+    - '22'    # SSH
+    - '80'    # HTTP
+    - '443'   # HTTPS
+    - '8096'  # Jellyfin
+    - '3000'  # Grafana
+
+- name: Enable UFW firewall
+  ufw:
+    state: enabled
+
+- name: Ensure Fail2ban service is running and enabled
+  systemd:
+    name: fail2ban
+    state: started
+    enabled: yes

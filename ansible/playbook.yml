@@ -1,0 +1,7 @@
+---
+- name: Configure Production Server for Media Services
+  hosts: media_servers
+  become: true
+  roles:
+    - common
+    - docker
